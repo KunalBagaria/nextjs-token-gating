@@ -1,7 +1,7 @@
-import axios, { AxiosResponse } from 'axios';
-
-interface Data {
-  project: Project;
+interface Response {
+  data: {
+    project: Project;
+  }
 }
 
 interface Project {
@@ -21,10 +21,19 @@ async function fetchMints(
   projectId: string,
   customerId: string,
   apiUrl: string = 'https://api.holaplex.com/graphql'
-): Promise<AxiosResponse<Data>> {
-  return axios.post<Data>(
-    apiUrl,
-    {
+) {
+  const res = await fetch(apiUrl, {
+    method: 'POST',
+    headers: {
+      'Accept-Encoding': 'gzip, deflate, br',
+      'Content-Type': 'application/json',
+      Accept: 'application/json',
+      Connection: 'keep-alive',
+      DNT: '1',
+      Origin: 'file://',
+      Authorization: apiKey,
+    },
+    body: JSON.stringify({
       query: `
         {
           project(id:"${projectId}") {
@@ -36,19 +45,10 @@ async function fetchMints(
           }
         }
       `,
-    },
-    {
-      headers: {
-        'Accept-Encoding': 'gzip, deflate, br',
-        'Content-Type': 'application/json',
-        Accept: 'application/json',
-        Connection: 'keep-alive',
-        DNT: 1,
-        Origin: 'file://',
-        Authorization: apiKey,
-      },
-    }
-  );
+    }),
+  });
+
+  return res.json() as Promise<Response>;  // add type assertion here
 }
 
 async function checkToken(
@@ -59,8 +59,8 @@ async function checkToken(
   apiUrl?: string
 ) {
   try {
-    const { data } = await fetchMints(apiKey, projectId, customerId, apiUrl);
-    const mints = data.project.customer.mints;
+    const response = await fetchMints(apiKey, projectId, customerId, apiUrl);
+    const mints = response.data.project.customer.mints;
     if (mints) {
       return mints.some((mint) => mint.id === mintId);
     }

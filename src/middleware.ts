@@ -9,22 +9,22 @@ async function gateMiddleware(
   mintId: string,
   next: Function
 ) {
-  const customerId = req.headers['CUSTOMER-ID'] as string;
+  const customerId = req.headers['customer-id'] as string;
   if (!customerId) {
     const ERROR_DETAILS = "Missing Holaplex Customer ID in Request";
-    res.status(400).send(ERROR_DETAILS);
+    res.status(400).send({ error: ERROR_DETAILS });
     next(new Error(ERROR_DETAILS));
   } else {
     // check whether the customer holds the particular token.
     const customerOwnsToken = await checkToken(apiKey, mintId, projectId, customerId);
     if (customerOwnsToken instanceof Error) {
       const ERROR_DETAILS = "Error while checking token";
-      res.status(500).send(ERROR_DETAILS);
+      res.status(500).send({ error: ERROR_DETAILS });
       next(new Error(ERROR_DETAILS));
     }
     if (customerOwnsToken === false) {
       const ERROR_DETAILS = "Customer does not own the token";
-      res.status(401).send(ERROR_DETAILS);
+      res.status(401).send({ error: ERROR_DETAILS });
       next(new Error(ERROR_DETAILS));
     }
     next("Success");
@@ -39,19 +39,23 @@ export function withTokenGating(
   mintId: string
 ) {
   return async (req: NextApiRequest, res: NextApiResponse) => {
-    // We're using a Promise here to allow for async middleware
-    await new Promise(async (resolve, reject) => {
-      await gateMiddleware(req, res, apiKey, projectId, mintId, (result: any) => {
-        // If the middleware calls next() with an error, reject the promise with that error
-        if (result instanceof Error) {
-          return reject(result);
-        }
-        // Otherwise, resolve the promise
-        return resolve(result);
+    try {
+      // We're using a Promise here to allow for async middleware
+      await new Promise(async (resolve, reject) => {
+        await gateMiddleware(req, res, apiKey, projectId, mintId, (result: any) => {
+          // If the middleware calls next() with an error, reject the promise with that error
+          if (result instanceof Error) {
+            return reject(result);
+          }
+          // Otherwise, resolve the promise
+          return resolve(result);
+        });
       });
-    });
 
-    // If we've made it here, the middleware did not send an error, so we can call the original handler
-    return handler(req, res);
+      // If we've made it here, the middleware did not send an error, so we can call the original handler
+      return handler(req, res);
+    } catch (e) {
+      // do nothing
+    }
   };
 }
