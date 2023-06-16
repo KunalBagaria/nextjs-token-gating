@@ -27,7 +27,7 @@ export default withTokenGating(
   handler,
   YOUR_HOLAPLEX_API_KEY,
   YOUR_PROJECT_ID,
-  TOKEN_MINT_ID
+  COLLECTION_ID
 );
 ```
 
