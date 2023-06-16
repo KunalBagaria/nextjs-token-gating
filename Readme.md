@@ -8,7 +8,7 @@ The main function of this SDK is the `withTokenGating` higher-order function, wh
 
 ## How it Works
 
-This SDK uses the Holaplex API to check if a given customer holds a specific token. The `checkToken` function sends a GraphQL query to the Holaplex API requesting the tokens associated with the specified customer and project. It then checks if the desired token (`mintId`) is in that list.
+This SDK uses the Holaplex API to check if a given customer holds a specific token. The `checkToken` function sends a GraphQL query to the Holaplex API requesting the tokens associated with the specified customer and project. It then checks if the desired token (`collectionId`) is in that list.
 
 ## Usage
 

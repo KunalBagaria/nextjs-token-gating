@@ -13,7 +13,7 @@ interface Customer {
 }
 
 interface Mint {
-  id: string;
+  collectionId: string;
 }
 
 async function fetchMints(
@@ -39,7 +39,7 @@ async function fetchMints(
           project(id:"${projectId}") {
             customer(id:"${customerId}") {
               mints {
-                id
+                collectionId
               }
             }
           }
@@ -53,7 +53,7 @@ async function fetchMints(
 
 async function checkToken(
   apiKey: string,
-  mintId: string,
+  collectionId: string,
   projectId: string,
   customerId: string,
   apiUrl?: string
@@ -62,7 +62,7 @@ async function checkToken(
     const response = await fetchMints(apiKey, projectId, customerId, apiUrl);
     const mints = response.data.project.customer.mints;
     if (mints) {
-      return mints.some((mint) => mint.id === mintId);
+      return mints.some((mint) => mint.collectionId === collectionId);
     }
     return false;
   } catch (e: any) {

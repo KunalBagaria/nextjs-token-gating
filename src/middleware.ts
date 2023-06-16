@@ -6,7 +6,7 @@ async function gateMiddleware(
   res: NextApiResponse,
   apiKey: string,
   projectId: string,
-  mintId: string,
+  collectionId: string,
   next: Function
 ) {
   const customerId = req.headers['customer-id'] as string;
@@ -16,7 +16,7 @@ async function gateMiddleware(
     next(new Error(ERROR_DETAILS));
   } else {
     // check whether the customer holds the particular token.
-    const customerOwnsToken = await checkToken(apiKey, mintId, projectId, customerId);
+    const customerOwnsToken = await checkToken(apiKey, collectionId, projectId, customerId);
     if (customerOwnsToken instanceof Error) {
       const ERROR_DETAILS = "Error while checking token";
       res.status(500).send({ error: ERROR_DETAILS });
@@ -36,13 +36,13 @@ export function withTokenGating(
   handler: (req: NextApiRequest, res: NextApiResponse) => void | Promise<void>,
   apiKey: string,
   projectId: string,
-  mintId: string
+  collectionId: string
 ) {
   return async (req: NextApiRequest, res: NextApiResponse) => {
     try {
       // We're using a Promise here to allow for async middleware
       await new Promise(async (resolve, reject) => {
-        await gateMiddleware(req, res, apiKey, projectId, mintId, (result: any) => {
+        await gateMiddleware(req, res, apiKey, projectId, collectionId, (result: any) => {
           // If the middleware calls next() with an error, reject the promise with that error
           if (result instanceof Error) {
             return reject(result);
