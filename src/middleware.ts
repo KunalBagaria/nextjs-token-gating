@@ -7,8 +7,24 @@ async function gateMiddleware(
   apiKey: string,
   projectId: string,
   collectionId: string,
-  next: Function
+  next: Function,
+  customerIdThroughParam?: string,
 ) {
+  if (customerIdThroughParam) {
+    const customerOwnsToken = await checkToken(apiKey, collectionId, projectId, customerIdThroughParam);
+    if (customerOwnsToken instanceof Error) {
+      const ERROR_DETAILS = "Error while checking token";
+      res.status(500).send({ error: ERROR_DETAILS });
+      next(new Error(ERROR_DETAILS));
+    }
+    if (customerOwnsToken === false) {
+      const ERROR_DETAILS = "Customer does not own the token";
+      res.status(401).send({ error: ERROR_DETAILS });
+      next(new Error(ERROR_DETAILS));
+    }
+    next("Success");
+    return;
+  }
   const customerId = req.headers['customer-id'] as string;
   if (!customerId) {
     const ERROR_DETAILS = "Missing Holaplex Customer ID in Request";
@@ -36,7 +52,8 @@ export function withTokenGating(
   handler: (req: NextApiRequest, res: NextApiResponse) => void | Promise<void>,
   apiKey: string,
   projectId: string,
-  collectionId: string
+  collectionId: string,
+  customerId?: string
 ) {
   return async (req: NextApiRequest, res: NextApiResponse) => {
     try {
@@ -49,9 +66,8 @@ export function withTokenGating(
           }
           // Otherwise, resolve the promise
           return resolve(result);
-        });
+        }, customerId);
       });
-
       // If we've made it here, the middleware did not send an error, so we can call the original handler
       return handler(req, res);
     } catch (e) {
