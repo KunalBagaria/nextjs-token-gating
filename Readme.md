@@ -12,6 +12,7 @@ This SDK uses the Holaplex API to check if a given customer holds a specific tok
 
 ## Usage
 
+---
 If you want to supply Customer ID manually:
 ---
 
@@ -68,13 +69,13 @@ export default withTokenAndSessionGating(
   YOUR_HOLAPLEX_API_KEY,
   YOUR_PROJECT_ID,
   COLLECTION_ID,
-  fetchCustomerIdCallback // function that takes user id (obtained from next-auth session) as an argument and returns customer id from the database
+  fetchCustomerIdCallback // function that takes user id (obtained from next-auth session) as an argument and returns customer id from your database
 );
 ```
 
-Please note that you'll also have to provide GOOGLE_CLIENT_ID & GOOGLE_CLIENT_SECRET in your .env file for this to work.
+Please note that you'll also have to provide `GOOGLE_CLIENT_ID` & `GOOGLE_CLIENT_SECRET` in your .env file for this to work.
 
-The withTokenAndSessionGating function takes the previous four arguments, with the modification of the fifth argument that takes in a function instead of a customer ID. This function should take the User ID as an argument (which the middleware automatically fetches from the session and supplies it to this function) and return the customer ID from your database.
+The `withTokenAndSessionGating` function takes the previous four arguments, with the modification of the fifth argument that takes in a function instead of a customer ID. This function should take the User ID as an argument (which the middleware automatically fetches from the session and supplies it to this function) and return the customer ID from your database.
 
 Once the customer ID is obtained, the middleware checks if the customer owns the specified token. If they don't, it will return a 401 status with a "Customer does not own the token" error. If there's an error while checking for the token, a 500 status with an "Error while checking token" error is returned.
 
