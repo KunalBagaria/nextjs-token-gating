@@ -73,7 +73,7 @@ export default withTokenAndSessionGating(
 );
 ```
 
-Please note that you'll also have to provide `GOOGLE_CLIENT_ID` & `GOOGLE_CLIENT_SECRET` in your .env file for this to work.
+Please note that `GOOGLE_CLIENT_ID` & `GOOGLE_CLIENT_SECRET` must be available as environment variables for this to work.
 
 The `withTokenAndSessionGating` function takes the previous four arguments, with the modification of the fifth argument that takes in a function instead of a customer ID. This function should take the User ID as an argument (which the middleware automatically fetches from the session and supplies it to this function) and return the customer ID from your database.
 
