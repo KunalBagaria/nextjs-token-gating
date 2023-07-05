@@ -90,7 +90,15 @@ export function withTokenAndSessionGating(
       // We're using a Promise here to allow for async middleware
       await new Promise(async (resolve, reject) => {
         const userId = await getUserIdFromSession(req, res);
+        if (!userId) {
+          const ERROR_DETAILS = "Missing Session Details";
+          return reject(new Error(ERROR_DETAILS));
+        }
         const customerID = await fetchCustomerIdCallback(userId);
+        if (typeof customerID !== 'string') {
+          const ERROR_DETAILS = "No Customer ID supplied for the user";
+          return reject(new Error(ERROR_DETAILS));
+        }
         await gateMiddleware(req, res, apiKey, projectId, collectionId, (result: any) => {
           // If the middleware calls next() with an error, reject the promise with that error
           if (result instanceof Error) {
