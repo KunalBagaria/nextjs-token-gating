@@ -30,7 +30,7 @@ const authOptions: NextAuthOptions = {
 
 async function getUserIdFromSession(req: NextApiRequest, res: NextApiResponse) {
   const session = await getServerSession(req, res, authOptions);
-  if (!session || !session.user) {
+  if (!session || !session.user.id) {
     res.status(401).send({ error: "Not logged in!" });
     return null;
   }
