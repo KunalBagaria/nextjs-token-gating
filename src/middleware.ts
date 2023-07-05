@@ -1,5 +1,6 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import { checkToken } from "./checkToken";
+import { getUserIdFromSession } from "./getUserIdFromSession";
 
 async function gateMiddleware(
   req: NextApiRequest,
@@ -59,6 +60,7 @@ export function withTokenGating(
     try {
       // We're using a Promise here to allow for async middleware
       await new Promise(async (resolve, reject) => {
+        const session =
         await gateMiddleware(req, res, apiKey, projectId, collectionId, (result: any) => {
           // If the middleware calls next() with an error, reject the promise with that error
           if (result instanceof Error) {
@@ -67,6 +69,36 @@ export function withTokenGating(
           // Otherwise, resolve the promise
           return resolve(result);
         }, customerId);
+      });
+      // If we've made it here, the middleware did not send an error, so we can call the original handler
+      return handler(req, res);
+    } catch (e) {
+      // do nothing
+    }
+  };
+}
+
+export function withTokenAndSessionGating(
+  handler: (req: NextApiRequest, res: NextApiResponse) => void | Promise<void>,
+  apiKey: string,
+  projectId: string,
+  collectionId: string,
+  fetchCustomerIdCallback: (userId: string) => Promise<string>
+) {
+  return async (req: NextApiRequest, res: NextApiResponse) => {
+    try {
+      // We're using a Promise here to allow for async middleware
+      await new Promise(async (resolve, reject) => {
+        const userId = await getUserIdFromSession(req, res);
+        const customerID = await fetchCustomerIdCallback(userId);
+        await gateMiddleware(req, res, apiKey, projectId, collectionId, (result: any) => {
+          // If the middleware calls next() with an error, reject the promise with that error
+          if (result instanceof Error) {
+            return reject(result);
+          }
+          // Otherwise, resolve the promise
+          return resolve(result);
+        }, customerID);
       });
       // If we've made it here, the middleware did not send an error, so we can call the original handler
       return handler(req, res);
