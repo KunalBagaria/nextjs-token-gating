@@ -19,7 +19,6 @@ If you want to supply Customer ID manually:
 First, import the `withTokenGating` function and apply it to your Next.js API route handlers like so:
 
 ```ts
-import prisma from '@/lib/db';
 import { withTokenGating } from "@holaplex/nextjs-token-gating";
 
 // Define your handler
@@ -57,6 +56,7 @@ If you want the middleware to extract the customer id through next-auth and your
 First, import the `withTokenAndSessionGating` function and apply it to your Next.js API route handlers like so:
 
 ```ts
+import prisma from '@/lib/db';
 import { withTokenAndSessionGating } from "@holaplex/nextjs-token-gating";
 
 // Define your handler
