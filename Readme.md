@@ -19,6 +19,7 @@ If you want to supply Customer ID manually:
 First, import the `withTokenGating` function and apply it to your Next.js API route handlers like so:
 
 ```ts
+import prisma from '@/lib/db';
 import { withTokenGating } from "@holaplex/nextjs-token-gating";
 
 // Define your handler
@@ -63,17 +64,25 @@ const handler = (req, res) => {
   res.status(200).send("You own the token, welcome!");
 };
 
+// Example of a callback function to get Customer ID from your database
+async function fetchCustomerIdCallback(userId) {
+  const user = await prisma.user.findFirst({
+    where: { id: userId }
+  });
+  return user.customerId
+}
+
 // Apply the middleware
 export default withTokenAndSessionGating(
   handler,
   YOUR_HOLAPLEX_API_KEY,
   YOUR_PROJECT_ID,
   COLLECTION_ID,
-  fetchCustomerIdCallback // function that takes user id (obtained from next-auth session) as an argument and returns customer id from your database
+  fetchCustomerIdCallback // function that takes user id (obtained from next-auth session) as an arg and returns customer id
 );
 ```
 
-Please note that `GOOGLE_CLIENT_ID` & `GOOGLE_CLIENT_SECRET` must be available as environment variables for this to work.
+**Please note that `GOOGLE_CLIENT_ID` & `GOOGLE_CLIENT_SECRET` must be available as environment variables for this to work.**
 
 The `withTokenAndSessionGating` function takes the previous four arguments, with the modification of the fifth argument that takes in a function instead of a customer ID. This function should take the User ID as an argument (which the middleware automatically fetches from the session and supplies it to this function) and return the customer ID from your database.
 
